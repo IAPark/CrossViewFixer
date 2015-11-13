@@ -23,19 +23,12 @@ c = (
     "http://lastchancesalon.net/xview/barn-story-city.x.jpg",
     "http://i.imgur.com/qy9F8g6.jpg",
     "http://i.imgur.com/hXK1y5x.jpg",
+    "http://imgur.com/yGT3NZW.jpg",
     "http://imgur.com/6vVoAFy.jpg",
     "http://imgur.com/L6MjV3E.jpg",
     "http://imgur.com/1PLktSj.jpg",
     "http://c1.staticflickr.com/1/690/21068022272_dfbdb97782_n.jpg",
-    "http://i.imgur.com/LiX8mf9.jpg",
-    "http://i.imgur.com/ixiDNUv.jpg",
-    "http://imgur.com/Y4mcF9b.jpg",
-    "http://i.imgur.com/IXJphS3.jpg"
-    "http://i.imgur.com/ElYMPYH.jpg",
-    "http://i.imgur.com/Sdb4Th1.png",
-    "http://i.imgur.com/HLbJqH8.jpg",
-    "http://orig02.deviantart.net/82f8/f/2010/086/8/1/side_street_by_artbytheo.jpg",
-    "https://imgur.com/kTUjqS9.jpg"
+    "http://i.imgur.com/LiX8mf9.jpg"
 )
 
 l = (

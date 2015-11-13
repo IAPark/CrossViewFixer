@@ -1,18 +1,6 @@
 from SimpleCV import Image, Display
 import training_set
-
-
-def is_cross_view(url):
-    image = Image(url)
-    image = image.scale(200.0/image.width)
-    left = image.crop(0, 0, image.width/2, 300)
-    right = image.crop(image.width/2, 0, image.width/2, 300)
-    motion = left.findMotion(right)
-    dx = 0
-    for m in motion:
-        dx += m.dx * 3
-    print(len(motion))
-    return dx / float(len(motion))
+from converter import CV
 
 
 wrong = 0
@@ -30,16 +18,28 @@ for u in training_set.p:
         sum_right += dx
 '''
 for u in training_set.c:
-        dx = is_cross_view(u)
-        attempted += 1
-        if dx < 0:
-            wrong += 1
-            sum_wrong += dx
-            print(u + " doesn't compute right")
-        else:
-            sum_right += dx
+    right, left = CV.split(u)
+    dx = CV.is_cross_view(right, left)
+    attempted += 1
+    if dx < 0:
+        wrong += 1
+        sum_wrong += dx
+        print(u + " doesn't compute right")
+    else:
+        sum_right += dx
 
+    dx = CV.is_cross_view(left, right)
+    attempted += 1
+    if dx > 0:
+        wrong += 1
+        sum_wrong += dx
+        print(u + " doesn't compute right inverted")
+    else:
+        sum_right += dx
 
+if wrong == 0:
+    print("everything was right")
+    wrong = 1E-200
 print(float(wrong)/attempted)
 print(sum_right/(attempted - float(wrong)))
 print(sum_wrong/float(wrong))
