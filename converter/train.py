@@ -1,74 +1,61 @@
-from pybrain import TanhLayer
-from pybrain.datasets import ClassificationDataSet
-from pybrain.supervised import BackpropTrainer
-from pybrain.tools.shortcuts import buildNetwork
-from pybrain.tools.xml import NetworkWriter, NetworkReader
+from keras.models import Sequential
+from keras.layers.core import Dense, Activation, Dropout
+from keras.layers import Convolution2D, Flatten, AveragePooling2D
+import numpy as np
 import training_set
-from converter.CV import split, get_net_input
-
-ds = ClassificationDataSet.loadFromFile("data2")
-
-
-#net = buildNetwork(27, 100, 100, 100, 100, 100, 100, 2, bias=True, outclass=TanhLayer)
-
-print("training")
-
-net = NetworkReader.readFrom("net")
-trainer = BackpropTrainer(net, ds, learningrate=0.01)
-
-trainer.trainUntilConvergence(verbose=True, maxEpochs=500)
-
-'''for i in range(1000):
-    r = trainer.train()
-    if i % 10 == 0:
-        print(i, r)
-'''
-
-NetworkWriter.writeToFile(net, "net")
-print("saved")
-sum = 0
-wrong = 0
-attempted = 0
-for u in training_set.l:
-    right, left = split(u)
-    data = get_net_input(right, left)
-    activation = net.activate(data)
-
-    print(u + ": cv " + str(activation))
-    sum += activation
-    attempted += 1
-    if activation[0] > 0.5 or activation[1] < 0.5:
-        wrong += 1
-        print(u + ": is wrong")
+from keras.optimizers import SGD, Adamax, Adadelta, Adagrad, RMSprop, Adam
+import pickle
 
 
-print(sum)
-sum = 0
+ds = Sequential()
 
-for u in training_set.l:
-    left, right = split(u)
-    data = get_net_input(right, left)
-    activation = net.activate(data)
+ds.add(Convolution2D(32, 3, 3, border_mode='valid', input_shape=(1, 100, 32)))
+ds.add(Activation("tanh"))
+ds.add(AveragePooling2D(pool_size=(10, 2)))
+ds.add(Convolution2D(64, 3, 3, border_mode='valid', input_shape=(1, 100, 32)))
+ds.add(Activation("tanh"))
+ds.add(Flatten())
+ds.add(Dense(100, activation='tanh'))
+ds.add(Dropout(0.5))
+ds.add(Dense(100, activation='tanh'))
+ds.add(Dropout(0.5))
+ds.add(Dense(100, activation='tanh'))
+ds.add(Dropout(0.5))
+ds.add(Dense(100, activation='tanh'))
+ds.add(Dropout(0.5))
+ds.add(Dense(1, activation='tanh'))
 
-    print(u + ": pv " + str(activation))
-    sum += activation
-    attempted += 1
-    if activation[0] < 0.5 or activation[1] > 0.5:
-        wrong += 1
-        print(u + ": is wrong when inverted")
-print(sum)
-print(float(wrong)/attempted)
+xs = pickle.load(open("xs", "rb"), encoding="bytes")
 
-wrong = 0
-attempted = 0
-for inpt, target in ds:
-    activation = net.activate(inpt)
-    if target[0] == 1:
-        if activation[0] < 0.5 or activation[1] > 0.5:
+ys = pickle.load(open("ys", "rb"), encoding="bytes")
+
+print(len(ys[0]))
+print(len(xs[0]))
+print(xs[0])
+
+ds.compile(loss='binary_crossentropy',
+              optimizer='rmsprop')
+
+samples = []
+
+for x in xs:
+    samples.append([x])
+images = pickle.load(open("urls", "rb"))
+
+def test():
+    wrong = 0.
+    print(len(xs[300:]))
+    for i in range(300, len(xs)):
+        if ys[i][0] > 0 != ds.predict(np.array([samples[i],]))[0] > 0:
+            print(i, ds.predict(np.array([samples[i], ])), images[int(i/2)])
             wrong += 1
-    else:
-        if activation[0] > 0.5 or activation[1] < 0.5:
-            wrong += 1
-    attempted += 1
 
-print(float(wrong)/attempted)
+    print(wrong/len(xs[300:]))
+for i in range(0, 10):
+    ds.fit(np.array(samples[:300]), np.array(ys[:300]), nb_epoch=10)
+    test()
+    ds.save_weights("trained", overwite=True)
+
+
+
+test()

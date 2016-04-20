@@ -1,18 +1,18 @@
-from SimpleCV import Image
-from pybrain.tools.xml import NetworkReader
+import cv2
+from numpy import *
+import numpy as np
+from matplotlib import pyplot as plt
 
-net = NetworkReader.readFrom("classification_net")
+stereo = cv2.StereoBM(cv2.STEREO_BM_BASIC_PRESET,ndisparities=16, SADWindowSize=15)
 
 
 def get_net_input(right, left):
-    motion = left.findMotion(right, window=right.width / 5)
-    data = []
-    for i in range(27):
-        if i < len(motion):
-            data.append(motion[i].dx)
-        else:
-            data.append(0)
-    return data
+    right_gray = cv2.cvtColor(right, cv2.COLOR_BGR2GRAY)
+    left_gray = cv2.cvtColor(left, cv2.COLOR_BGR2GRAY)
+    disparity = stereo.compute(right_gray,left_gray   )
+    disparity = cv2.resize(disparity,(32, 100))
+
+    return disparity
 
 
 def is_cross_view(right, left):
@@ -20,9 +20,11 @@ def is_cross_view(right, left):
 
 
 def split(url):
-    image = Image(url)
-    image = image.scale(200.0/image.width)
-    left = image.crop(0, 0, image.width/2, image.height)
-    right = image.crop(image.width/2, 0, image.width/2, image.height)
+    cap = cv2.VideoCapture(url)
+    ret, image = cap.read()
+    image = cv2.resize(image, (200, 200))
+    cv2.destroyAllWindows()
 
+    left = image[0:200, 0:100]
+    right = image[0:200, 100:200]
     return right, left

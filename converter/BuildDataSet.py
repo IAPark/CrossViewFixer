@@ -3,13 +3,12 @@ import praw
 import time
 
 import requests
-from pybrain.datasets import ClassificationDataSet
 
-from converter.CV import split, get_net_input
+from CV import split, get_net_input
 
 import pickle
 
-''''
+'''
 r = praw.Reddit(user_agent="Cross View training set harvester, /u/space_fountain")
 CV = r.get_subreddit("crossview")
 new = CV.get_new(limit=300)
@@ -40,18 +39,28 @@ for u in urls:
 
 pickle.dump(images, open("urls", "wb"))
 '''
-'''
 
 images = pickle.load(open("urls"))
-ds = ClassificationDataSet(27, class_labels=['CV', 'PV'])
-
+xs = []
+ys = []
+i = 0.
 for u in images:
-    right, left = split(u)
+    try:
+        right, left = split(u)
+        xs.append(get_net_input(right, left))
+        ys.append([-1,])
 
-    ds.appendLinked(get_net_input(right, left), 0)
-    ds.appendLinked(get_net_input(left, right), 1)
+        xs.append(get_net_input(left, right))
+        ys.append([1.,])
+        print(i/len(images))
+        i+=1
+    except:
+        print("error")
+        pass
+print("done")
+pickle.dump(xs, open("xs", "wb"))
+pickle.dump(ys, open("ys", "wb"))
 
-ds.saveToFile("data")
 '''
 original = ClassificationDataSet.loadFromFile("data")
 
@@ -61,4 +70,4 @@ for i, t in original:
     ds.appendLinked(i, ([1, 0] if t[0] == 0 else [0, 1]))
 
 ds.saveToFile("data2")
-
+'''
